@@ -31,3 +31,27 @@ impl Future for TimerFuture {
         }
     }
 }
+
+impl TimerFuture {
+    pub fn new(duration: Duration) -> Self {
+        let shared_state = Arc::new(Mutex::new(SharedState {
+            completed: false,
+            waker: None,
+        }));
+
+        let thread_shared_state = shared_state.clone();
+
+        thread::spawn(move || {
+            thread::sleep(duration);
+            let mut shared_state = thread_shared_state.lock().unwrap();
+
+            shared_state.completed = true;
+
+            if let Some(waker) = shared_state.waker.take() {
+                waker.wake();
+            }
+        });
+
+        TimerFuture { shared_state }
+    }
+}
