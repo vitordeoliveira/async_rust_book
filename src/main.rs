@@ -4,9 +4,12 @@ use futures::{
 };
 use std::{
     future::Future,
-    sync::mpsc::{sync_channel, Receiver, SyncSender},
-    sync::{Arc, Mutex},
+    sync::{
+        mpsc::{sync_channel, Receiver, SyncSender},
+        Arc, Mutex,
+    },
     task::Context,
+    thread,
     time::Duration,
 };
 // The timer we wrote in the previous section:
@@ -58,7 +61,7 @@ impl Spawner {
 impl Executor {
     fn run(&self) {
         while let Ok(task) = self.ready_queue.recv() {
-            println!("task exist");
+            thread::sleep(Duration::new(5, 0));
             let mut future_slot = task.future.lock().unwrap();
             if let Some(mut future) = future_slot.take() {
                 let waker = waker_ref(&task);
@@ -84,7 +87,7 @@ fn main() {
 
     spawner.spawn(async {
         println!("howdy-0!");
-        TimerFuture::new(Duration::new(4, 0)).await;
+        TimerFuture::new(Duration::new(2, 0)).await;
         println!("done-0");
     });
 
