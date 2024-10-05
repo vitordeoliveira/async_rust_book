@@ -34,6 +34,7 @@ impl Future for TimerFuture {
 
 impl TimerFuture {
     pub fn new(duration: Duration) -> Self {
+        println!("timer init");
         let shared_state = Arc::new(Mutex::new(SharedState {
             completed: false,
             waker: None,
@@ -51,6 +52,8 @@ impl TimerFuture {
                 waker.wake();
             }
         });
+
+        println!("timer finish");
 
         TimerFuture { shared_state }
     }
