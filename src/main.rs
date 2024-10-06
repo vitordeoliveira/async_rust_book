@@ -9,7 +9,6 @@ use std::{
         Arc, Mutex,
     },
     task::Context,
-    thread,
     time::Duration,
 };
 // The timer we wrote in the previous section:
@@ -61,7 +60,6 @@ impl Spawner {
 impl Executor {
     fn run(&self) {
         while let Ok(task) = self.ready_queue.recv() {
-            thread::sleep(Duration::new(5, 0));
             let mut future_slot = task.future.lock().unwrap();
             if let Some(mut future) = future_slot.take() {
                 let waker = waker_ref(&task);
@@ -69,6 +67,7 @@ impl Executor {
                 let context = &mut Context::from_waker(&waker);
 
                 if future.as_mut().poll(context).is_pending() {
+                    println!("changing future slot");
                     *future_slot = Some(future);
                 }
             }
@@ -89,6 +88,17 @@ fn main() {
         println!("howdy-0!");
         TimerFuture::new(Duration::new(2, 0)).await;
         println!("done-0");
+    });
+
+    spawner.spawn(async {
+        println!("howdy-1!");
+        TimerFuture::new(Duration::new(2, 0)).await;
+        println!("done-1");
+    });
+    spawner.spawn(async {
+        println!("howdy-2!");
+        TimerFuture::new(Duration::new(2, 0)).await;
+        println!("done-2");
     });
 
     // Drop the spawner so that our executor knows it is finished and won't
