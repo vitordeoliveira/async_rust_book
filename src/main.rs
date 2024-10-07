@@ -67,7 +67,6 @@ impl Executor {
                 let context = &mut Context::from_waker(&waker);
 
                 if future.as_mut().poll(context).is_pending() {
-                    println!("changing future slot");
                     *future_slot = Some(future);
                 }
             }
@@ -80,25 +79,14 @@ fn main() {
 
     spawner.spawn(async {
         println!("howdy!");
-        TimerFuture::new(Duration::new(2, 0)).await;
-        println!("done");
+        let a = TimerFuture::new(Duration::new(2, 0)).await;
+        println!("done {a}");
     });
 
     spawner.spawn(async {
         println!("howdy-0!");
         TimerFuture::new(Duration::new(2, 0)).await;
         println!("done-0");
-    });
-
-    spawner.spawn(async {
-        println!("howdy-1!");
-        TimerFuture::new(Duration::new(2, 0)).await;
-        println!("done-1");
-    });
-    spawner.spawn(async {
-        println!("howdy-2!");
-        TimerFuture::new(Duration::new(2, 0)).await;
-        println!("done-2");
     });
 
     // Drop the spawner so that our executor knows it is finished and won't

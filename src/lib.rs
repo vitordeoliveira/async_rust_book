@@ -18,13 +18,13 @@ struct SharedState {
 }
 
 impl Future for TimerFuture {
-    type Output = ();
+    type Output = u128;
 
     fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
         let mut shared_state = self.shared_state.lock().unwrap();
 
         if shared_state.completed {
-            Poll::Ready(())
+            Poll::Ready(100)
         } else {
             shared_state.waker = Some(cx.waker().clone());
             Poll::Pending
