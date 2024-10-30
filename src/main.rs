@@ -60,11 +60,15 @@ impl Spawner {
 impl Executor {
     fn run(&self) {
         while let Ok(task) = self.ready_queue.recv() {
+            println!("\n\ntask read\n\n");
+
             let mut future_slot = task.future.lock().unwrap();
             if let Some(mut future) = future_slot.take() {
                 let waker = waker_ref(&task);
 
                 let context = &mut Context::from_waker(&waker);
+
+                println!("{context:?}");
 
                 if future.as_mut().poll(context).is_pending() {
                     *future_slot = Some(future);
@@ -93,5 +97,9 @@ fn main() {
     // receive more incoming tasks to run.
     drop(spawner);
 
+    println!("after drop");
+
     executor.run();
+
+    println!("after run");
 }
